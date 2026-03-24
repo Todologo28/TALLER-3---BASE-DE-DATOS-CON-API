@@ -1,0 +1,788 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistema de Proveedores — API CRUD</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0b0f;
+    --surface: #12141a;
+    --surface2: #1a1d26;
+    --border: #252836;
+    --accent: #00e5a0;
+    --accent2: #7c6af7;
+    --warn: #ff6b6b;
+    --text: #e8eaf0;
+    --muted: #6b7280;
+    --font: 'Syne', sans-serif;
+    --mono: 'DM Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: var(--font); min-height: 100vh; }
+
+  /* HEADER */
+  header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1.2rem 2rem; border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    position: sticky; top: 0; z-index: 100;
+  }
+  .logo { display: flex; align-items: center; gap: .8rem; }
+  .logo-icon {
+    width: 36px; height: 36px; background: var(--accent); border-radius: 8px;
+    display: grid; place-items: center;
+  }
+  .logo-icon svg { width: 20px; height: 20px; }
+  .logo-title { font-size: 1.1rem; font-weight: 800; letter-spacing: -.02em; }
+  .logo-subtitle { font-size: .7rem; color: var(--muted); font-family: var(--mono); }
+  .badge {
+    background: rgba(0,229,160,.1); color: var(--accent);
+    border: 1px solid rgba(0,229,160,.3); padding: .3rem .8rem;
+    border-radius: 999px; font-size: .75rem; font-family: var(--mono); font-weight: 500;
+  }
+
+  /* LAYOUT */
+  .container { max-width: 1300px; margin: 0 auto; padding: 2rem; }
+  .grid { display: grid; grid-template-columns: 1fr 2fr; gap: 1.5rem; align-items: start; }
+
+  /* CARDS */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .card-header {
+    padding: 1rem 1.2rem; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: .6rem;
+  }
+  .card-header h2 { font-size: .9rem; font-weight: 700; letter-spacing: .02em; text-transform: uppercase; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+  .card-body { padding: 1.2rem; }
+
+  /* FORM */
+  .form-group { margin-bottom: 1rem; }
+  label { display: block; font-size: .75rem; font-weight: 600; color: var(--muted); margin-bottom: .4rem; text-transform: uppercase; letter-spacing: .05em; }
+  input, select {
+    width: 100%; padding: .65rem .9rem;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 8px; color: var(--text); font-family: var(--font); font-size: .9rem;
+    transition: border-color .2s;
+    outline: none;
+  }
+  input:focus, select:focus { border-color: var(--accent); }
+  input::placeholder { color: var(--muted); }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
+
+  /* BUTTONS */
+  .btn { padding: .6rem 1.2rem; border-radius: 8px; border: none; cursor: pointer; font-family: var(--font); font-weight: 700; font-size: .85rem; transition: all .15s; display: inline-flex; align-items: center; gap: .4rem; }
+  .btn-primary { background: var(--accent); color: #000; }
+  .btn-primary:hover { background: #00c98a; transform: translateY(-1px); }
+  .btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { border-color: var(--muted); }
+  .btn-danger { background: rgba(255,107,107,.15); color: var(--warn); border: 1px solid rgba(255,107,107,.3); }
+  .btn-danger:hover { background: rgba(255,107,107,.25); }
+  .btn-sm { padding: .35rem .7rem; font-size: .8rem; }
+  .btn-full { width: 100%; justify-content: center; }
+  .btn-group { display: flex; gap: .5rem; margin-top: .5rem; }
+
+  /* SEARCH */
+  .search-bar { display: flex; gap: .6rem; margin-bottom: 1.2rem; }
+  .search-bar input { flex: 1; }
+
+  /* TABLE */
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: .85rem; }
+  th { padding: .7rem 1rem; text-align: left; font-size: .7rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); border-bottom: 1px solid var(--border); }
+  td { padding: .75rem 1rem; border-bottom: 1px solid rgba(37,40,54,.6); vertical-align: middle; }
+  tr:hover td { background: rgba(255,255,255,.02); }
+  tr:last-child td { border-bottom: none; }
+
+  /* BADGES */
+  .status-badge {
+    padding: .25rem .6rem; border-radius: 999px; font-size: .7rem; font-weight: 600;
+    font-family: var(--mono);
+  }
+  .status-activo { background: rgba(0,229,160,.1); color: var(--accent); border: 1px solid rgba(0,229,160,.2); }
+  .status-inactivo { background: rgba(255,107,107,.1); color: var(--warn); border: 1px solid rgba(255,107,107,.2); }
+  .cat-badge {
+    padding: .2rem .55rem; border-radius: 6px; font-size: .7rem; font-weight: 600;
+    background: rgba(124,106,247,.12); color: var(--accent2); border: 1px solid rgba(124,106,247,.2);
+  }
+
+  /* TOAST */
+  #toast-wrap { position: fixed; top: 1rem; right: 1rem; z-index: 9999; display: flex; flex-direction: column; gap: .5rem; }
+  .toast {
+    padding: .7rem 1.2rem; border-radius: 10px; font-size: .85rem; font-weight: 600;
+    animation: slideIn .25s ease; max-width: 320px;
+  }
+  .toast.success { background: rgba(0,229,160,.15); border: 1px solid rgba(0,229,160,.4); color: var(--accent); }
+  .toast.error   { background: rgba(255,107,107,.15); border: 1px solid rgba(255,107,107,.4); color: var(--warn); }
+  @keyframes slideIn { from { transform: translateX(20px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+
+  /* RESPONSE LOG */
+  .log-panel { font-family: var(--mono); font-size: .78rem; background: #080a0e; border: 1px solid var(--border); border-radius: 8px; padding: 1rem; max-height: 220px; overflow-y: auto; color: #8af3c4; }
+  .log-entry { padding: .2rem 0; border-bottom: 1px solid rgba(255,255,255,.04); }
+  .log-method { font-weight: 700; margin-right: .4rem; }
+  .method-GET    { color: #61afef; }
+  .method-POST   { color: #98c379; }
+  .method-PUT    { color: #e5c07b; }
+  .method-DELETE { color: #e06c75; }
+  .log-status { margin-left: .4rem; opacity: .6; }
+
+  /* MODAL */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.7); z-index: 500; display: none; place-items: center; backdrop-filter: blur(4px); }
+  .modal-overlay.open { display: grid; }
+  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; width: min(500px, 95vw); animation: fadeUp .2s ease; }
+  @keyframes fadeUp { from { transform: translateY(12px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .modal-title { font-size: 1rem; font-weight: 800; margin-bottom: 1.2rem; display: flex; align-items: center; gap: .6rem; }
+
+  /* STATS */
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.2rem; }
+  .stat-val { font-size: 1.8rem; font-weight: 800; }
+  .stat-label { font-size: .7rem; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-top: .2rem; }
+  .stat-val.green { color: var(--accent); }
+  .stat-val.purple { color: var(--accent2); }
+  .stat-val.red { color: var(--warn); }
+
+  /* TABS */
+  .tabs { display: flex; gap: .5rem; margin-bottom: 1.5rem; }
+  .tab { padding: .5rem 1rem; border-radius: 8px; font-size: .85rem; font-weight: 600; cursor: pointer; color: var(--muted); transition: all .15s; background: none; border: 1px solid transparent; }
+  .tab.active { background: rgba(0,229,160,.1); color: var(--accent); border-color: rgba(0,229,160,.3); }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  .empty-state { text-align: center; padding: 3rem; color: var(--muted); }
+  .empty-state svg { opacity: .3; margin-bottom: 1rem; }
+
+  /* POSTMAN SECTION */
+  .endpoint-list { display: flex; flex-direction: column; gap: .6rem; }
+  .endpoint-item { display: flex; align-items: center; gap: .8rem; padding: .7rem 1rem; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; }
+  .method-tag { font-family: var(--mono); font-size: .7rem; font-weight: 700; padding: .2rem .55rem; border-radius: 5px; min-width: 55px; text-align: center; }
+  .mt-get    { background: rgba(97,175,239,.15); color: #61afef; }
+  .mt-post   { background: rgba(152,195,121,.15); color: #98c379; }
+  .mt-put    { background: rgba(229,192,123,.15); color: #e5c07b; }
+  .mt-delete { background: rgba(224,108,117,.15); color: #e06c75; }
+  .ep-url { font-family: var(--mono); font-size: .8rem; flex: 1; color: var(--text); }
+  .ep-desc { font-size: .75rem; color: var(--muted); }
+
+  pre { white-space: pre-wrap; word-break: break-all; }
+  .json-block { background: #080a0e; border: 1px solid var(--border); border-radius: 8px; padding: 1rem; font-family: var(--mono); font-size: .78rem; color: #8af3c4; margin-top: .5rem; max-height: 160px; overflow-y: auto; }
+
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } .form-row { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<div id="toast-wrap"></div>
+
+<!-- MODAL EDITAR -->
+<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-title">
+      <span style="color:var(--accent2)">✎</span> Editar Proveedor
+    </div>
+    <input type="hidden" id="edit-id">
+    <div class="form-row">
+      <div class="form-group"><label>Nombre</label><input id="edit-nombre" placeholder="Nombre empresa"></div>
+      <div class="form-group"><label>Contacto</label><input id="edit-contacto" placeholder="Nombre contacto"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Teléfono</label><input id="edit-telefono" placeholder="507-XXXX-XXXX"></div>
+      <div class="form-group"><label>Email</label><input id="edit-email" type="email" placeholder="email@empresa.com"></div>
+    </div>
+    <div class="form-group"><label>Dirección</label><input id="edit-direccion" placeholder="Dirección completa"></div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Categoría</label>
+        <select id="edit-categoria">
+          <option value="Tecnología">Tecnología</option>
+          <option value="Insumos">Insumos</option>
+          <option value="Papelería">Papelería</option>
+          <option value="Logística">Logística</option>
+          <option value="Médico">Médico</option>
+          <option value="Alimentación">Alimentación</option>
+          <option value="Otro">Otro</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Estado</label>
+        <select id="edit-estado">
+          <option value="activo">Activo</option>
+          <option value="inactivo">Inactivo</option>
+        </select>
+      </div>
+    </div>
+    <div class="btn-group">
+      <button class="btn btn-primary btn-full" onclick="saveEdit()">💾 Guardar cambios</button>
+      <button class="btn btn-secondary" onclick="document.getElementById('modal').classList.remove('open')">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#000" stroke-width="2.5"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2Z"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+    </div>
+    <div>
+      <div class="logo-title">ProveAPI</div>
+      <div class="logo-subtitle">Sistema de Proveedores — REST API</div>
+    </div>
+  </div>
+  <div class="badge">● API ACTIVA (DEMO)</div>
+</header>
+
+<div class="container">
+
+  <!-- TABS PRINCIPALES -->
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('crud')">⚡ CRUD Interactivo</button>
+    <button class="tab" onclick="switchTab('postman')">📮 Documentación Postman</button>
+    <button class="tab" onclick="switchTab('caso')">🏪 Caso de Uso</button>
+  </div>
+
+  <!-- ══════════ TAB: CRUD ══════════ -->
+  <div class="tab-content active" id="tab-crud">
+
+    <!-- STATS -->
+    <div class="stats">
+      <div class="stat-card"><div class="stat-val green" id="stat-total">—</div><div class="stat-label">Total Proveedores</div></div>
+      <div class="stat-card"><div class="stat-val purple" id="stat-activos">—</div><div class="stat-label">Activos</div></div>
+      <div class="stat-card"><div class="stat-val red" id="stat-inactivos">—</div><div class="stat-label">Inactivos</div></div>
+    </div>
+
+    <div class="grid">
+      <!-- PANEL IZQUIERDO -->
+      <div style="display:flex;flex-direction:column;gap:1.2rem">
+
+        <!-- INSERTAR -->
+        <div class="card">
+          <div class="card-header">
+            <div class="dot" style="background:#98c379"></div>
+            <h2>POST — Insertar Proveedor</h2>
+          </div>
+          <div class="card-body">
+            <div class="form-group"><label>Nombre empresa *</label><input id="f-nombre" placeholder="Ej: TechSupply S.A."></div>
+            <div class="form-group"><label>Contacto *</label><input id="f-contacto" placeholder="Nombre del contacto"></div>
+            <div class="form-row">
+              <div class="form-group"><label>Teléfono *</label><input id="f-telefono" placeholder="507-6000-0000"></div>
+              <div class="form-group"><label>Email *</label><input id="f-email" type="email" placeholder="email@empresa.com"></div>
+            </div>
+            <div class="form-group"><label>Dirección</label><input id="f-direccion" placeholder="Dirección"></div>
+            <div class="form-group">
+              <label>Categoría *</label>
+              <select id="f-categoria">
+                <option value="">— Seleccionar —</option>
+                <option>Tecnología</option><option>Insumos</option><option>Papelería</option>
+                <option>Logística</option><option>Médico</option><option>Alimentación</option><option>Otro</option>
+              </select>
+            </div>
+            <button class="btn btn-primary btn-full" onclick="createProveedor()">＋ Crear Proveedor</button>
+          </div>
+        </div>
+
+        <!-- LOG -->
+        <div class="card">
+          <div class="card-header">
+            <div class="dot" style="background:var(--accent2)"></div>
+            <h2>Response Log</h2>
+          </div>
+          <div class="card-body" style="padding:.8rem">
+            <div class="log-panel" id="log-panel">
+              <div class="log-entry" style="color:var(--muted)">// Esperando llamadas a la API...</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- PANEL DERECHO -->
+      <div class="card">
+        <div class="card-header" style="justify-content:space-between">
+          <div style="display:flex;align-items:center;gap:.6rem">
+            <div class="dot" style="background:#61afef"></div>
+            <h2>GET — Lista de Proveedores</h2>
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="loadProveedores()">↺ Actualizar</button>
+        </div>
+        <div class="card-body" style="padding:.8rem">
+          <div class="search-bar">
+            <input id="search-input" placeholder="🔍 Buscar por nombre, email..." oninput="filterTable()">
+            <select id="search-cat" onchange="filterTable()" style="width:auto;min-width:130px">
+              <option value="">Todas las categorías</option>
+              <option>Tecnología</option><option>Insumos</option><option>Papelería</option>
+              <option>Logística</option><option>Médico</option><option>Alimentación</option><option>Otro</option>
+            </select>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th><th>Nombre</th><th>Contacto</th><th>Email</th>
+                  <th>Categoría</th><th>Estado</th><th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="proveedores-table">
+                <tr><td colspan="7"><div class="empty-state">Cargando...</div></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ TAB: POSTMAN ══════════ -->
+  <div class="tab-content" id="tab-postman">
+    <div class="grid">
+      <div style="display:flex;flex-direction:column;gap:1.2rem">
+        <div class="card">
+          <div class="card-header"><div class="dot"></div><h2>Endpoints Disponibles</h2></div>
+          <div class="card-body">
+            <div class="endpoint-list">
+              <div class="endpoint-item">
+                <span class="method-tag mt-get">GET</span>
+                <div><div class="ep-url">/api/proveedores</div><div class="ep-desc">Obtener todos los proveedores</div></div>
+              </div>
+              <div class="endpoint-item">
+                <span class="method-tag mt-get">GET</span>
+                <div><div class="ep-url">/api/proveedores/{id}</div><div class="ep-desc">Obtener proveedor por ID</div></div>
+              </div>
+              <div class="endpoint-item">
+                <span class="method-tag mt-post">POST</span>
+                <div><div class="ep-url">/api/proveedores</div><div class="ep-desc">Crear nuevo proveedor</div></div>
+              </div>
+              <div class="endpoint-item">
+                <span class="method-tag mt-put">PUT</span>
+                <div><div class="ep-url">/api/proveedores/{id}</div><div class="ep-desc">Actualizar proveedor existente</div></div>
+              </div>
+              <div class="endpoint-item">
+                <span class="method-tag mt-delete">DELETE</span>
+                <div><div class="ep-url">/api/proveedores/{id}</div><div class="ep-desc">Eliminar proveedor</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="dot" style="background:#e5c07b"></div><h2>Base URL</h2></div>
+          <div class="card-body">
+            <div class="json-block">http://localhost:5000</div>
+            <div style="margin-top:1rem;font-size:.8rem;color:var(--muted)">Headers requeridos:</div>
+            <div class="json-block">Content-Type: application/json<br>Accept: application/json</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:1.2rem">
+        <div class="card">
+          <div class="card-header"><div class="dot" style="background:#98c379"></div><h2>POST — Body de Ejemplo</h2></div>
+          <div class="card-body">
+            <div style="font-size:.78rem;color:var(--muted);margin-bottom:.5rem">Endpoint: POST /api/proveedores</div>
+            <div class="json-block"><pre>{
+  "nombre":    "Distribuidora XYZ",
+  "contacto":  "Juan Pérez",
+  "telefono":  "507-6100-0000",
+  "email":     "juan@distribxyz.pa",
+  "direccion": "Betania, Panamá",
+  "categoria": "Insumos",
+  "estado":    "activo"
+}</pre></div>
+            <div style="font-size:.78rem;color:var(--muted);margin:1rem 0 .5rem">Respuesta exitosa (201 Created):</div>
+            <div class="json-block"><pre>{
+  "success": true,
+  "message": "Proveedor creado",
+  "data": {
+    "id": 6,
+    "nombre": "Distribuidora XYZ",
+    "contacto": "Juan Pérez",
+    "telefono": "507-6100-0000",
+    "email": "juan@distribxyz.pa",
+    "direccion": "Betania, Panamá",
+    "categoria": "Insumos",
+    "estado": "activo",
+    "fecha_registro": "2026-03-22 23:00:00"
+  }
+}</pre></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="dot" style="background:#e5c07b"></div><h2>PUT — Body de Ejemplo</h2></div>
+          <div class="card-body">
+            <div style="font-size:.78rem;color:var(--muted);margin-bottom:.5rem">Endpoint: PUT /api/proveedores/6</div>
+            <div class="json-block"><pre>{
+  "nombre":   "Distribuidora XYZ Actualizada",
+  "estado":   "inactivo"
+}</pre></div>
+            <div style="font-size:.78rem;color:var(--muted);margin:.8rem 0 .5rem">Respuesta exitosa (200 OK):</div>
+            <div class="json-block"><pre>{
+  "success": true,
+  "message": "Actualizado",
+  "data": { "id": 6, "nombre": "Distribuidora XYZ Actualizada", ... }
+}</pre></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="dot" style="background:#e06c75"></div><h2>DELETE — Ejemplo</h2></div>
+          <div class="card-body">
+            <div style="font-size:.78rem;color:var(--muted);margin-bottom:.5rem">Endpoint: DELETE /api/proveedores/6</div>
+            <div style="font-size:.78rem;color:var(--muted);margin-bottom:.5rem">No requiere body. Respuesta (200 OK):</div>
+            <div class="json-block"><pre>{
+  "success": true,
+  "message": "Proveedor 'Distribuidora XYZ' eliminado"
+}</pre></div>
+            <div style="font-size:.78rem;color:var(--muted);margin:.8rem 0 .5rem">Respuesta error (404 Not Found):</div>
+            <div class="json-block"><pre>{
+  "success": false,
+  "error": "No encontrado"
+}</pre></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════ TAB: CASO DE USO ══════════ -->
+  <div class="tab-content" id="tab-caso">
+    <div class="grid">
+      <div style="display:flex;flex-direction:column;gap:1.2rem">
+        <div class="card">
+          <div class="card-header"><div class="dot" style="background:var(--accent2)"></div><h2>Caso de Uso</h2></div>
+          <div class="card-body">
+            <div style="font-size:1rem;font-weight:800;margin-bottom:.8rem;color:var(--accent)">🏪 Sistema de Gestión de Proveedores — MedPanamá S.A.</div>
+            <p style="font-size:.85rem;color:var(--muted);line-height:1.7;margin-bottom:1rem">
+              <strong style="color:var(--text)">Actor Principal:</strong> Departamento de Compras<br>
+              <strong style="color:var(--text)">Sistema:</strong> API REST de Proveedores<br>
+              <strong style="color:var(--text)">Objetivo:</strong> Gestionar el ciclo de vida completo de los proveedores médicos.
+            </p>
+            <div style="font-size:.85rem;line-height:1.8;color:var(--muted)">
+              <strong style="color:var(--text);display:block;margin-bottom:.4rem">📋 Flujo Principal:</strong>
+              1. El encargado de compras abre el sistema y <strong style="color:var(--text)">consulta (GET)</strong> todos los proveedores activos.<br>
+              2. Recibe oferta de nuevo proveedor y lo <strong style="color:var(--text)">registra (POST)</strong> con sus datos.<br>
+              3. El proveedor cambia número de teléfono; se <strong style="color:var(--text)">actualiza (PUT)</strong> la información.<br>
+              4. El proveedor deja de operar; se <strong style="color:var(--text)">elimina (DELETE)</strong> del sistema.<br>
+              5. En todo momento se puede <strong style="color:var(--text)">buscar (GET ?q=)</strong> por nombre o categoría.
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header"><div class="dot"></div><h2>Diagrama de Flujo</h2></div>
+          <div class="card-body">
+            <div style="font-family:var(--mono);font-size:.8rem;color:var(--muted);line-height:2">
+              <div style="color:var(--accent)">┌─────────────────────────────┐</div>
+              <div style="color:var(--text)">│    CLIENTE (Postman/Web)    │</div>
+              <div style="color:var(--accent)">└──────────────┬──────────────┘</div>
+              <div style="color:var(--muted)">               │ HTTP Request</div>
+              <div style="color:var(--accent2)">┌──────────────▼──────────────┐</div>
+              <div style="color:var(--text)">│      Flask REST API         │</div>
+              <div style="color:var(--text)">│  GET / POST / PUT / DELETE  │</div>
+              <div style="color:var(--accent2)">└──────────────┬──────────────┘</div>
+              <div style="color:var(--muted)">               │ SQL Queries</div>
+              <div style="color:#e5c07b">┌──────────────▼──────────────┐</div>
+              <div style="color:var(--text)">│      SQLite Database        │</div>
+              <div style="color:var(--text)">│    tabla: proveedores       │</div>
+              <div style="color:#e5c07b">└─────────────────────────────┘</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:1.2rem">
+        <div class="card">
+          <div class="card-header"><div class="dot" style="background:#98c379"></div><h2>Simulación del Caso de Uso</h2></div>
+          <div class="card-body">
+            <p style="font-size:.8rem;color:var(--muted);margin-bottom:1rem">Ejecuta el caso de uso paso a paso como lo haría el departamento de compras de MedPanamá:</p>
+
+            <div style="display:flex;flex-direction:column;gap:.8rem">
+              <div style="border:1px solid var(--border);border-radius:8px;padding:1rem;background:var(--surface2)">
+                <div style="font-size:.75rem;font-weight:700;color:#61afef;font-family:var(--mono);margin-bottom:.4rem">PASO 1 — GET /api/proveedores</div>
+                <p style="font-size:.8rem;color:var(--muted);margin-bottom:.6rem">Consultar proveedores activos del área médica en el sistema.</p>
+                <button class="btn btn-secondary btn-sm" onclick="caso_paso1()">▶ Ejecutar consulta</button>
+                <div class="json-block" id="caso-res1" style="display:none;margin-top:.6rem"></div>
+              </div>
+
+              <div style="border:1px solid var(--border);border-radius:8px;padding:1rem;background:var(--surface2)">
+                <div style="font-size:.75rem;font-weight:700;color:#98c379;font-family:var(--mono);margin-bottom:.4rem">PASO 2 — POST /api/proveedores</div>
+                <p style="font-size:.8rem;color:var(--muted);margin-bottom:.6rem">Registrar nuevo proveedor: "Equipos Médicos del Istmo".</p>
+                <button class="btn btn-secondary btn-sm" onclick="caso_paso2()">▶ Registrar proveedor</button>
+                <div class="json-block" id="caso-res2" style="display:none;margin-top:.6rem"></div>
+              </div>
+
+              <div style="border:1px solid var(--border);border-radius:8px;padding:1rem;background:var(--surface2)">
+                <div style="font-size:.75rem;font-weight:700;color:#e5c07b;font-family:var(--mono);margin-bottom:.4rem">PASO 3 — PUT /api/proveedores/{id}</div>
+                <p style="font-size:.8rem;color:var(--muted);margin-bottom:.6rem">Actualizar teléfono del proveedor MediSupplies (ID 5).</p>
+                <button class="btn btn-secondary btn-sm" onclick="caso_paso3()">▶ Actualizar datos</button>
+                <div class="json-block" id="caso-res3" style="display:none;margin-top:.6rem"></div>
+              </div>
+
+              <div style="border:1px solid var(--border);border-radius:8px;padding:1rem;background:var(--surface2)">
+                <div style="font-size:.75rem;font-weight:700;color:#e06c75;font-family:var(--mono);margin-bottom:.4rem">PASO 4 — GET /api/proveedores/1</div>
+                <p style="font-size:.8rem;color:var(--muted);margin-bottom:.6rem">Consultar detalle de un proveedor específico antes de operar.</p>
+                <button class="btn btn-secondary btn-sm" onclick="caso_paso4()">▶ Ver detalle</button>
+                <div class="json-block" id="caso-res4" style="display:none;margin-top:.6rem"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+// ══════════════════════════════════════════════
+// CONFIGURACIÓN — En demo usamos datos locales
+// ══════════════════════════════════════════════
+const API = "http://localhost:5000/api/proveedores";
+
+// DB local simulada para el demo en-browser
+let localDB = [
+  {id:1,nombre:"TechSupply S.A.",contacto:"Carlos Méndez",telefono:"507-6000-1234",email:"carlos@techsupply.pa",direccion:"Calle 50, Panamá",categoria:"Tecnología",estado:"activo",fecha_registro:"2026-03-22 08:00:00"},
+  {id:2,nombre:"Distribuidora Global",contacto:"Ana Torres",telefono:"507-6000-5678",email:"ana@distglobal.pa",direccion:"Vía España, Panamá",categoria:"Insumos",estado:"activo",fecha_registro:"2026-03-22 08:00:00"},
+  {id:3,nombre:"Papelería Nacional",contacto:"Luis Rodríguez",telefono:"507-6000-9012",email:"luis@papnacional.pa",direccion:"El Cangrejo, Panamá",categoria:"Papelería",estado:"activo",fecha_registro:"2026-03-22 08:00:00"},
+  {id:4,nombre:"LogiPanamá",contacto:"María González",telefono:"507-6000-3456",email:"maria@logipm.pa",direccion:"Tocumen, Panamá",categoria:"Logística",estado:"inactivo",fecha_registro:"2026-03-22 08:00:00"},
+  {id:5,nombre:"MediSupplies",contacto:"Pedro Herrera",telefono:"507-6000-7890",email:"pedro@medisupplies.pa",direccion:"Marbella, Panamá",categoria:"Médico",estado:"activo",fecha_registro:"2026-03-22 08:00:00"},
+];
+let nextId = 6;
+
+// ══════════════════════════════════════════════
+// TABS
+// ══════════════════════════════════════════════
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach((t,i)=>{ t.classList.toggle('active', ['crud','postman','caso'][i]===name); });
+  document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+}
+
+// ══════════════════════════════════════════════
+// LOG
+// ══════════════════════════════════════════════
+function logCall(method, url, status, data) {
+  const panel = document.getElementById('log-panel');
+  const colors = {GET:'#61afef',POST:'#98c379',PUT:'#e5c07b',DELETE:'#e06c75'};
+  const entry = document.createElement('div');
+  entry.className = 'log-entry';
+  entry.innerHTML = `<span class="log-method" style="color:${colors[method]}">${method}</span><span style="color:#cdd6f4">${url}</span><span class="log-status" style="color:${status<300?'#a6e3a1':'#f38ba8'}">${status}</span>`;
+  panel.insertBefore(entry, panel.firstChild);
+  if (panel.children.length > 20) panel.lastChild.remove();
+}
+
+// ══════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════
+function toast(msg, type='success') {
+  const wrap = document.getElementById('toast-wrap');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.textContent = msg;
+  wrap.appendChild(t);
+  setTimeout(()=>t.remove(), 3000);
+}
+
+// ══════════════════════════════════════════════
+// CRUD LOCAL (simula la API real)
+// ══════════════════════════════════════════════
+function api_getAll() {
+  logCall('GET', '/api/proveedores', 200, localDB);
+  return {success:true,total:localDB.length,data:[...localDB]};
+}
+function api_getOne(id) {
+  const p = localDB.find(p=>p.id===id);
+  logCall('GET', `/api/proveedores/${id}`, p?200:404);
+  return p ? {success:true,data:{...p}} : {success:false,error:"No encontrado"};
+}
+function api_create(data) {
+  if(localDB.find(p=>p.email===data.email)) {
+    logCall('POST', '/api/proveedores', 409);
+    return {success:false,error:"Email ya registrado"};
+  }
+  const p = {...data, id:nextId++, fecha_registro: new Date().toISOString().replace('T',' ').slice(0,19)};
+  localDB.push(p);
+  logCall('POST', '/api/proveedores', 201);
+  return {success:true,message:"Proveedor creado",data:{...p}};
+}
+function api_update(id, data) {
+  const idx = localDB.findIndex(p=>p.id===id);
+  if(idx===-1){ logCall('PUT',`/api/proveedores/${id}`,404); return {success:false,error:"No encontrado"}; }
+  localDB[idx] = {...localDB[idx], ...data};
+  logCall('PUT', `/api/proveedores/${id}`, 200);
+  return {success:true,message:"Actualizado",data:{...localDB[idx]}};
+}
+function api_delete(id) {
+  const idx = localDB.findIndex(p=>p.id===id);
+  if(idx===-1){ logCall('DELETE',`/api/proveedores/${id}`,404); return {success:false,error:"No encontrado"}; }
+  const nombre = localDB[idx].nombre;
+  localDB.splice(idx,1);
+  logCall('DELETE', `/api/proveedores/${id}`, 200);
+  return {success:true,message:`Proveedor '${nombre}' eliminado`};
+}
+
+// ══════════════════════════════════════════════
+// UI — RENDER TABLE
+// ══════════════════════════════════════════════
+let allData = [];
+function loadProveedores() {
+  const res = api_getAll();
+  allData = res.data;
+  updateStats();
+  renderTable(allData);
+}
+function updateStats() {
+  document.getElementById('stat-total').textContent = allData.length;
+  document.getElementById('stat-activos').textContent = allData.filter(p=>p.estado==='activo').length;
+  document.getElementById('stat-inactivos').textContent = allData.filter(p=>p.estado==='inactivo').length;
+}
+function renderTable(data) {
+  const tbody = document.getElementById('proveedores-table');
+  if(!data.length) {
+    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></svg><br>Sin resultados</div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = data.map(p=>`
+    <tr>
+      <td style="font-family:var(--mono);color:var(--muted)">#${p.id}</td>
+      <td style="font-weight:700">${p.nombre}</td>
+      <td style="color:var(--muted)">${p.contacto}</td>
+      <td style="font-family:var(--mono);font-size:.78rem">${p.email}</td>
+      <td><span class="cat-badge">${p.categoria}</span></td>
+      <td><span class="status-badge status-${p.estado}">${p.estado}</span></td>
+      <td>
+        <div style="display:flex;gap:.4rem">
+          <button class="btn btn-secondary btn-sm" onclick="openEdit(${p.id})" title="Editar">✎</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteProveedor(${p.id})" title="Eliminar">✕</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+function filterTable() {
+  const q = document.getElementById('search-input').value.toLowerCase();
+  const cat = document.getElementById('search-cat').value;
+  const filtered = allData.filter(p=>{
+    const matchQ = !q || p.nombre.toLowerCase().includes(q) || p.email.toLowerCase().includes(q) || p.contacto.toLowerCase().includes(q);
+    const matchCat = !cat || p.categoria === cat;
+    return matchQ && matchCat;
+  });
+  renderTable(filtered);
+}
+
+// ══════════════════════════════════════════════
+// CREATE
+// ══════════════════════════════════════════════
+function createProveedor() {
+  const data = {
+    nombre:   document.getElementById('f-nombre').value.trim(),
+    contacto: document.getElementById('f-contacto').value.trim(),
+    telefono: document.getElementById('f-telefono').value.trim(),
+    email:    document.getElementById('f-email').value.trim(),
+    direccion:document.getElementById('f-direccion').value.trim(),
+    categoria:document.getElementById('f-categoria').value,
+    estado:   'activo'
+  };
+  if(!data.nombre||!data.contacto||!data.telefono||!data.email||!data.categoria) {
+    toast('⚠ Completa todos los campos requeridos','error'); return;
+  }
+  const res = api_create(data);
+  if(res.success) {
+    toast(`✓ Proveedor "${data.nombre}" creado`);
+    ['f-nombre','f-contacto','f-telefono','f-email','f-direccion'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('f-categoria').value='';
+    loadProveedores();
+  } else {
+    toast(`✗ ${res.error}`,'error');
+  }
+}
+
+// ══════════════════════════════════════════════
+// EDIT / UPDATE
+// ══════════════════════════════════════════════
+function openEdit(id) {
+  const res = api_getOne(id);
+  if(!res.success) return;
+  const p = res.data;
+  document.getElementById('edit-id').value = p.id;
+  document.getElementById('edit-nombre').value = p.nombre;
+  document.getElementById('edit-contacto').value = p.contacto;
+  document.getElementById('edit-telefono').value = p.telefono;
+  document.getElementById('edit-email').value = p.email;
+  document.getElementById('edit-direccion').value = p.direccion||'';
+  document.getElementById('edit-categoria').value = p.categoria;
+  document.getElementById('edit-estado').value = p.estado;
+  document.getElementById('modal').classList.add('open');
+}
+function closeModal(e) { if(e.target===document.getElementById('modal')) document.getElementById('modal').classList.remove('open'); }
+function saveEdit() {
+  const id = parseInt(document.getElementById('edit-id').value);
+  const data = {
+    nombre:   document.getElementById('edit-nombre').value.trim(),
+    contacto: document.getElementById('edit-contacto').value.trim(),
+    telefono: document.getElementById('edit-telefono').value.trim(),
+    email:    document.getElementById('edit-email').value.trim(),
+    direccion:document.getElementById('edit-direccion').value.trim(),
+    categoria:document.getElementById('edit-categoria').value,
+    estado:   document.getElementById('edit-estado').value,
+  };
+  const res = api_update(id, data);
+  if(res.success) {
+    toast(`✓ Proveedor actualizado`);
+    document.getElementById('modal').classList.remove('open');
+    loadProveedores();
+  } else {
+    toast(`✗ ${res.error}`,'error');
+  }
+}
+
+// ══════════════════════════════════════════════
+// DELETE
+// ══════════════════════════════════════════════
+function deleteProveedor(id) {
+  const p = localDB.find(p=>p.id===id);
+  if(!p) return;
+  if(!confirm(`¿Eliminar a "${p.nombre}"?`)) return;
+  const res = api_delete(id);
+  if(res.success) { toast(`🗑 ${res.message}`); loadProveedores(); }
+  else toast(`✗ ${res.error}`,'error');
+}
+
+// ══════════════════════════════════════════════
+// CASO DE USO — PASOS
+// ══════════════════════════════════════════════
+function showCasoRes(id, data) {
+  const el = document.getElementById(id);
+  el.style.display='block';
+  el.innerHTML = `<pre>${JSON.stringify(data,null,2)}</pre>`;
+}
+function caso_paso1() {
+  const res = api_getAll();
+  const medicos = res.data.filter(p=>p.categoria==='Médico');
+  showCasoRes('caso-res1', {consulta:"Proveedores médicos activos", total:medicos.length, data:medicos});
+  toast('✓ Consulta ejecutada');
+}
+function caso_paso2() {
+  const data = {nombre:"Equipos Médicos del Istmo",contacto:"Roberto Arias",telefono:"507-6200-1111",email:"roberto@emistmo.pa",direccion:"Costa del Este, Panamá",categoria:"Médico",estado:"activo"};
+  const res = api_create(data);
+  showCasoRes('caso-res2', res);
+  if(res.success) { toast('✓ Nuevo proveedor médico registrado'); loadProveedores(); }
+  else toast(`✗ ${res.error}`,'error');
+}
+function caso_paso3() {
+  const res = api_update(5, {telefono:"507-7000-9999"});
+  showCasoRes('caso-res3', res);
+  if(res.success) { toast('✓ Teléfono de MediSupplies actualizado'); loadProveedores(); }
+}
+function caso_paso4() {
+  const res = api_getOne(1);
+  showCasoRes('caso-res4', res);
+  toast('✓ Detalle consultado');
+}
+
+// ══════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════
+loadProveedores();
+</script>
+</body>
+</html>
