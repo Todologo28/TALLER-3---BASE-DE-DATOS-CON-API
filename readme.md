@@ -1,11 +1,11 @@
-# 🏭 Sistema de Gestión de Proveedores — API REST
+#  Sistema de Gestión de Proveedores — API REST
 
 ## Descripción
 API REST completa con operaciones **CRUD** (Create, Read, Update, Delete) para la gestión de proveedores, desarrollada con **Python Flask** y **SQLite**. Incluye un frontend interactivo y documentación de pruebas con Postman.
 
 ---
 
-## 📁 Estructura del Proyecto
+# Estructura del Proyecto
 
 ```
 proveedores-api/
@@ -19,7 +19,7 @@ proveedores-api/
 
 ---
 
-## ⚙️ Tecnologías
+# Tecnologías
 
 | Tecnología | Uso |
 |---|---|
@@ -31,7 +31,7 @@ proveedores-api/
 
 ---
 
-## 🚀 Cómo ejecutar
+# Cómo ejecutar
 
 ### 1. Instalar dependencias
 ```bash
@@ -49,7 +49,7 @@ Abre `index.html` en tu navegador.
 
 ---
 
-## 🔗 Endpoints de la API
+# Endpoints de la API
 
 | Método | Endpoint | Descripción |
 |---|---|---|
@@ -61,13 +61,13 @@ Abre `index.html` en tu navegador.
 
 ---
 
-## 📮 Parte II — Pruebas con Postman
+# Parte II — Pruebas con Postman
 
 ### Configuración inicial
 - **Base URL:** `http://localhost:5000`
 - **Headers:** `Content-Type: application/json`
 
-### 1️⃣ GET — Consultar todos los proveedores
+## 1️ GET — Consultar todos los proveedores
 ```
 GET http://localhost:5000/api/proveedores
 ```
@@ -80,7 +80,7 @@ GET http://localhost:5000/api/proveedores
 }
 ```
 
-### 2️⃣ POST — Insertar nuevo proveedor
+## 2️ POST — Insertar nuevo proveedor
 ```
 POST http://localhost:5000/api/proveedores
 Content-Type: application/json
@@ -96,7 +96,7 @@ Content-Type: application/json
 }
 ```
 
-### 3️⃣ PUT — Actualizar proveedor
+### 3️ PUT — Actualizar proveedor
 ```
 PUT http://localhost:5000/api/proveedores/1
 Content-Type: application/json
@@ -107,14 +107,14 @@ Content-Type: application/json
 }
 ```
 
-### 4️⃣ DELETE — Eliminar proveedor
+### 4️ DELETE — Eliminar proveedor
 ```
 DELETE http://localhost:5000/api/proveedores/6
 ```
 
 ---
 
-## 🏪 Parte III — Caso de Uso
+##  Parte III — Caso de Uso
 
 ### Sistema de Gestión de Proveedores Médicos — MedPanamá S.A.
 
@@ -135,7 +135,7 @@ DELETE http://localhost:5000/api/proveedores/6
 
 ---
 
-## 🗄️ Esquema de la Base de Datos
+##  Esquema de la Base de Datos
 
 ```sql
 CREATE TABLE proveedores (
@@ -153,7 +153,7 @@ CREATE TABLE proveedores (
 
 ---
 
-## 📝 Datos de muestra incluidos
+##  Datos de muestra incluidos
 
 | # | Nombre | Categoría | Estado |
 |---|---|---|---|
@@ -165,7 +165,7 @@ CREATE TABLE proveedores (
 
 ---
 
-## 📌 Notas para el repositorio Git
+##  Notas para el repositorio Git
 
 ```bash
 # Comandos para subir al repositorio
