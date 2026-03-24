@@ -382,7 +382,7 @@
   "nombre":    "Distribuidora XYZ",
   "contacto":  "Juan Pérez",
   "telefono":  "507-6100-0000",
-  "email":     "juan@distribxyz.pa",
+  "email":     "<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="0a607f6b644a6e63797e786368727370247a6b">[email&#160;protected]</a>",
   "direccion": "Betania, Panamá",
   "categoria": "Insumos",
   "estado":    "activo"
@@ -396,7 +396,7 @@
     "nombre": "Distribuidora XYZ",
     "contacto": "Juan Pérez",
     "telefono": "507-6100-0000",
-    "email": "juan@distribxyz.pa",
+    "email": "<a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="d4bea1b5ba94b0bda7a0a6bdb6acadaefaa4b5">[email&#160;protected]</a>",
     "direccion": "Betania, Panamá",
     "categoria": "Insumos",
     "estado": "activo",
@@ -534,19 +534,18 @@
 
 <script>
 // ══════════════════════════════════════════════
-// CONFIGURACIÓN — En demo usamos datos locales
+// API — fetch() real hacia Flask
 // ══════════════════════════════════════════════
-const API = "http://localhost:5000/api/proveedores";
+const API = "/api/proveedores";
 
-// DB local simulada para el demo en-browser
-let localDB = [
-  {id:1,nombre:"TechSupply S.A.",contacto:"Carlos Méndez",telefono:"507-6000-1234",email:"carlos@techsupply.pa",direccion:"Calle 50, Panamá",categoria:"Tecnología",estado:"activo",fecha_registro:"2026-03-22 08:00:00"},
-  {id:2,nombre:"Distribuidora Global",contacto:"Ana Torres",telefono:"507-6000-5678",email:"ana@distglobal.pa",direccion:"Vía España, Panamá",categoria:"Insumos",estado:"activo",fecha_registro:"2026-03-22 08:00:00"},
-  {id:3,nombre:"Papelería Nacional",contacto:"Luis Rodríguez",telefono:"507-6000-9012",email:"luis@papnacional.pa",direccion:"El Cangrejo, Panamá",categoria:"Papelería",estado:"activo",fecha_registro:"2026-03-22 08:00:00"},
-  {id:4,nombre:"LogiPanamá",contacto:"María González",telefono:"507-6000-3456",email:"maria@logipm.pa",direccion:"Tocumen, Panamá",categoria:"Logística",estado:"inactivo",fecha_registro:"2026-03-22 08:00:00"},
-  {id:5,nombre:"MediSupplies",contacto:"Pedro Herrera",telefono:"507-6000-7890",email:"pedro@medisupplies.pa",direccion:"Marbella, Panamá",categoria:"Médico",estado:"activo",fecha_registro:"2026-03-22 08:00:00"},
-];
-let nextId = 6;
+async function apiFetch(method, url, body) {
+  const opts = { method, headers: {"Content-Type":"application/json"} };
+  if (body) opts.body = JSON.stringify(body);
+  const resp = await fetch(url, opts);
+  const data = await resp.json();
+  logCall(method, url.replace(location.origin,''), resp.status);
+  return data;
+}
 
 // ══════════════════════════════════════════════
 // TABS
@@ -560,12 +559,12 @@ function switchTab(name) {
 // ══════════════════════════════════════════════
 // LOG
 // ══════════════════════════════════════════════
-function logCall(method, url, status, data) {
+function logCall(method, url, status) {
   const panel = document.getElementById('log-panel');
   const colors = {GET:'#61afef',POST:'#98c379',PUT:'#e5c07b',DELETE:'#e06c75'};
   const entry = document.createElement('div');
   entry.className = 'log-entry';
-  entry.innerHTML = `<span class="log-method" style="color:${colors[method]}">${method}</span><span style="color:#cdd6f4">${url}</span><span class="log-status" style="color:${status<300?'#a6e3a1':'#f38ba8'}">${status}</span>`;
+  entry.innerHTML = `<span class="log-method" style="color:${colors[method]}">${method}</span><span style="color:#cdd6f4">${url}</span><span class="log-status" style="color:${status<300?'#a6e3a1':'#f38ba8'}"> ${status}</span>`;
   panel.insertBefore(entry, panel.firstChild);
   if (panel.children.length > 20) panel.lastChild.remove();
 }
@@ -579,62 +578,28 @@ function toast(msg, type='success') {
   t.className = `toast ${type}`;
   t.textContent = msg;
   wrap.appendChild(t);
-  setTimeout(()=>t.remove(), 3000);
-}
-
-// ══════════════════════════════════════════════
-// CRUD LOCAL (simula la API real)
-// ══════════════════════════════════════════════
-function api_getAll() {
-  logCall('GET', '/api/proveedores', 200, localDB);
-  return {success:true,total:localDB.length,data:[...localDB]};
-}
-function api_getOne(id) {
-  const p = localDB.find(p=>p.id===id);
-  logCall('GET', `/api/proveedores/${id}`, p?200:404);
-  return p ? {success:true,data:{...p}} : {success:false,error:"No encontrado"};
-}
-function api_create(data) {
-  if(localDB.find(p=>p.email===data.email)) {
-    logCall('POST', '/api/proveedores', 409);
-    return {success:false,error:"Email ya registrado"};
-  }
-  const p = {...data, id:nextId++, fecha_registro: new Date().toISOString().replace('T',' ').slice(0,19)};
-  localDB.push(p);
-  logCall('POST', '/api/proveedores', 201);
-  return {success:true,message:"Proveedor creado",data:{...p}};
-}
-function api_update(id, data) {
-  const idx = localDB.findIndex(p=>p.id===id);
-  if(idx===-1){ logCall('PUT',`/api/proveedores/${id}`,404); return {success:false,error:"No encontrado"}; }
-  localDB[idx] = {...localDB[idx], ...data};
-  logCall('PUT', `/api/proveedores/${id}`, 200);
-  return {success:true,message:"Actualizado",data:{...localDB[idx]}};
-}
-function api_delete(id) {
-  const idx = localDB.findIndex(p=>p.id===id);
-  if(idx===-1){ logCall('DELETE',`/api/proveedores/${id}`,404); return {success:false,error:"No encontrado"}; }
-  const nombre = localDB[idx].nombre;
-  localDB.splice(idx,1);
-  logCall('DELETE', `/api/proveedores/${id}`, 200);
-  return {success:true,message:`Proveedor '${nombre}' eliminado`};
+  setTimeout(()=>t.remove(), 3500);
 }
 
 // ══════════════════════════════════════════════
 // UI — RENDER TABLE
 // ══════════════════════════════════════════════
 let allData = [];
-function loadProveedores() {
-  const res = api_getAll();
+
+async function loadProveedores() {
+  const res = await apiFetch('GET', API);
+  if (!res.success) { toast('Error cargando datos','error'); return; }
   allData = res.data;
   updateStats();
   renderTable(allData);
 }
+
 function updateStats() {
   document.getElementById('stat-total').textContent = allData.length;
   document.getElementById('stat-activos').textContent = allData.filter(p=>p.estado==='activo').length;
   document.getElementById('stat-inactivos').textContent = allData.filter(p=>p.estado==='inactivo').length;
 }
+
 function renderTable(data) {
   const tbody = document.getElementById('proveedores-table');
   if(!data.length) {
@@ -652,12 +617,13 @@ function renderTable(data) {
       <td>
         <div style="display:flex;gap:.4rem">
           <button class="btn btn-secondary btn-sm" onclick="openEdit(${p.id})" title="Editar">✎</button>
-          <button class="btn btn-danger btn-sm" onclick="deleteProveedor(${p.id})" title="Eliminar">✕</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteProveedor(${p.id},'${p.nombre.replace(/'/g,"\\'")}')" title="Eliminar">✕</button>
         </div>
       </td>
     </tr>
   `).join('');
 }
+
 function filterTable() {
   const q = document.getElementById('search-input').value.toLowerCase();
   const cat = document.getElementById('search-cat').value;
@@ -670,38 +636,38 @@ function filterTable() {
 }
 
 // ══════════════════════════════════════════════
-// CREATE
+// CREATE — POST
 // ══════════════════════════════════════════════
-function createProveedor() {
+async function createProveedor() {
   const data = {
-    nombre:   document.getElementById('f-nombre').value.trim(),
-    contacto: document.getElementById('f-contacto').value.trim(),
-    telefono: document.getElementById('f-telefono').value.trim(),
-    email:    document.getElementById('f-email').value.trim(),
-    direccion:document.getElementById('f-direccion').value.trim(),
-    categoria:document.getElementById('f-categoria').value,
-    estado:   'activo'
+    nombre:    document.getElementById('f-nombre').value.trim(),
+    contacto:  document.getElementById('f-contacto').value.trim(),
+    telefono:  document.getElementById('f-telefono').value.trim(),
+    email:     document.getElementById('f-email').value.trim(),
+    direccion: document.getElementById('f-direccion').value.trim(),
+    categoria: document.getElementById('f-categoria').value,
+    estado:    'activo'
   };
   if(!data.nombre||!data.contacto||!data.telefono||!data.email||!data.categoria) {
     toast('⚠ Completa todos los campos requeridos','error'); return;
   }
-  const res = api_create(data);
+  const res = await apiFetch('POST', API, data);
   if(res.success) {
     toast(`✓ Proveedor "${data.nombre}" creado`);
     ['f-nombre','f-contacto','f-telefono','f-email','f-direccion'].forEach(id=>document.getElementById(id).value='');
     document.getElementById('f-categoria').value='';
     loadProveedores();
   } else {
-    toast(`✗ ${res.error}`,'error');
+    toast(`✗ ${res.error}`, 'error');
   }
 }
 
 // ══════════════════════════════════════════════
-// EDIT / UPDATE
+// EDIT — GET + PUT
 // ══════════════════════════════════════════════
-function openEdit(id) {
-  const res = api_getOne(id);
-  if(!res.success) return;
+async function openEdit(id) {
+  const res = await apiFetch('GET', `${API}/${id}`);
+  if(!res.success) { toast('No se encontró el proveedor','error'); return; }
   const p = res.data;
   document.getElementById('edit-id').value = p.id;
   document.getElementById('edit-nombre').value = p.nombre;
@@ -713,68 +679,74 @@ function openEdit(id) {
   document.getElementById('edit-estado').value = p.estado;
   document.getElementById('modal').classList.add('open');
 }
-function closeModal(e) { if(e.target===document.getElementById('modal')) document.getElementById('modal').classList.remove('open'); }
-function saveEdit() {
+
+function closeModal(e) {
+  if(e.target===document.getElementById('modal')) document.getElementById('modal').classList.remove('open');
+}
+
+async function saveEdit() {
   const id = parseInt(document.getElementById('edit-id').value);
   const data = {
-    nombre:   document.getElementById('edit-nombre').value.trim(),
-    contacto: document.getElementById('edit-contacto').value.trim(),
-    telefono: document.getElementById('edit-telefono').value.trim(),
-    email:    document.getElementById('edit-email').value.trim(),
-    direccion:document.getElementById('edit-direccion').value.trim(),
-    categoria:document.getElementById('edit-categoria').value,
-    estado:   document.getElementById('edit-estado').value,
+    nombre:    document.getElementById('edit-nombre').value.trim(),
+    contacto:  document.getElementById('edit-contacto').value.trim(),
+    telefono:  document.getElementById('edit-telefono').value.trim(),
+    email:     document.getElementById('edit-email').value.trim(),
+    direccion: document.getElementById('edit-direccion').value.trim(),
+    categoria: document.getElementById('edit-categoria').value,
+    estado:    document.getElementById('edit-estado').value,
   };
-  const res = api_update(id, data);
+  const res = await apiFetch('PUT', `${API}/${id}`, data);
   if(res.success) {
     toast(`✓ Proveedor actualizado`);
     document.getElementById('modal').classList.remove('open');
     loadProveedores();
   } else {
-    toast(`✗ ${res.error}`,'error');
+    toast(`✗ ${res.error}`, 'error');
   }
 }
 
 // ══════════════════════════════════════════════
 // DELETE
 // ══════════════════════════════════════════════
-function deleteProveedor(id) {
-  const p = localDB.find(p=>p.id===id);
-  if(!p) return;
-  if(!confirm(`¿Eliminar a "${p.nombre}"?`)) return;
-  const res = api_delete(id);
+async function deleteProveedor(id, nombre) {
+  if(!confirm(`¿Eliminar a "${nombre}"?`)) return;
+  const res = await apiFetch('DELETE', `${API}/${id}`);
   if(res.success) { toast(`🗑 ${res.message}`); loadProveedores(); }
-  else toast(`✗ ${res.error}`,'error');
+  else toast(`✗ ${res.error}`, 'error');
 }
 
 // ══════════════════════════════════════════════
-// CASO DE USO — PASOS
+// CASO DE USO — PASOS (fetch real)
 // ══════════════════════════════════════════════
-function showCasoRes(id, data) {
-  const el = document.getElementById(id);
+function showCasoRes(elId, data) {
+  const el = document.getElementById(elId);
   el.style.display='block';
   el.innerHTML = `<pre>${JSON.stringify(data,null,2)}</pre>`;
 }
-function caso_paso1() {
-  const res = api_getAll();
+
+async function caso_paso1() {
+  const res = await apiFetch('GET', API);
   const medicos = res.data.filter(p=>p.categoria==='Médico');
-  showCasoRes('caso-res1', {consulta:"Proveedores médicos activos", total:medicos.length, data:medicos});
+  showCasoRes('caso-res1', {consulta:"Proveedores médicos", total:medicos.length, data:medicos});
   toast('✓ Consulta ejecutada');
 }
-function caso_paso2() {
+
+async function caso_paso2() {
   const data = {nombre:"Equipos Médicos del Istmo",contacto:"Roberto Arias",telefono:"507-6200-1111",email:"roberto@emistmo.pa",direccion:"Costa del Este, Panamá",categoria:"Médico",estado:"activo"};
-  const res = api_create(data);
+  const res = await apiFetch('POST', API, data);
   showCasoRes('caso-res2', res);
-  if(res.success) { toast('✓ Nuevo proveedor médico registrado'); loadProveedores(); }
+  if(res.success) { toast('✓ Nuevo proveedor registrado'); loadProveedores(); }
   else toast(`✗ ${res.error}`,'error');
 }
-function caso_paso3() {
-  const res = api_update(5, {telefono:"507-7000-9999"});
+
+async function caso_paso3() {
+  const res = await apiFetch('PUT', `${API}/5`, {telefono:"507-7000-9999"});
   showCasoRes('caso-res3', res);
-  if(res.success) { toast('✓ Teléfono de MediSupplies actualizado'); loadProveedores(); }
+  if(res.success) { toast('✓ Teléfono actualizado'); loadProveedores(); }
 }
-function caso_paso4() {
-  const res = api_getOne(1);
+
+async function caso_paso4() {
+  const res = await apiFetch('GET', `${API}/1`);
   showCasoRes('caso-res4', res);
   toast('✓ Detalle consultado');
 }
