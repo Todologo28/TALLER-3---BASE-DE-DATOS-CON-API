@@ -1,0 +1,182 @@
+{
+  "info": {
+    "name": "Sistema de Proveedores — API CRUD",
+    "description": "Colección completa para probar el CRUD de proveedores con Flask + SQLite.\n\n**Base URL:** http://127.0.0.1:5000\n\nOrden de prueba sugerido:\n1. GET All → ver datos iniciales\n2. POST → crear proveedor\n3. GET One → verificar el creado\n4. PUT → actualizar\n5. DELETE → eliminar",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://127.0.0.1:5000",
+      "type": "string"
+    },
+    {
+      "key": "proveedor_id",
+      "value": "1",
+      "type": "string",
+      "description": "ID del proveedor a consultar/editar/eliminar"
+    }
+  ],
+  "item": [
+    {
+      "name": "1 — GET | Obtener todos los proveedores",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Accept", "value": "application/json" }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/proveedores",
+          "host": ["{{base_url}}"],
+          "path": ["api", "proveedores"]
+        },
+        "description": "Retorna la lista completa de proveedores registrados en la base de datos."
+      },
+      "response": [
+        {
+          "name": "200 OK — Lista de proveedores",
+          "status": "OK",
+          "code": 200,
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "body": "{\n  \"success\": true,\n  \"total\": 5,\n  \"data\": [\n    {\n      \"id\": 1,\n      \"nombre\": \"TechSupply S.A.\",\n      \"contacto\": \"Carlos Méndez\",\n      \"telefono\": \"507-6000-1234\",\n      \"email\": \"carlos@techsupply.pa\",\n      \"direccion\": \"Calle 50, Panamá\",\n      \"categoria\": \"Tecnología\",\n      \"estado\": \"activo\",\n      \"fecha_registro\": \"2026-03-22 08:00:00\"\n    }\n  ]\n}"
+        }
+      ]
+    },
+    {
+      "name": "2 — GET | Obtener proveedor por ID",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Accept", "value": "application/json" }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/proveedores/{{proveedor_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "proveedores", "{{proveedor_id}}"]
+        },
+        "description": "Retorna un proveedor específico por su ID. Cambia la variable `proveedor_id` para probar distintos IDs."
+      },
+      "response": [
+        {
+          "name": "200 OK — Proveedor encontrado",
+          "status": "OK",
+          "code": 200,
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "body": "{\n  \"success\": true,\n  \"data\": {\n    \"id\": 1,\n    \"nombre\": \"TechSupply S.A.\",\n    \"contacto\": \"Carlos Méndez\",\n    \"telefono\": \"507-6000-1234\",\n    \"email\": \"carlos@techsupply.pa\",\n    \"direccion\": \"Calle 50, Panamá\",\n    \"categoria\": \"Tecnología\",\n    \"estado\": \"activo\",\n    \"fecha_registro\": \"2026-03-22 08:00:00\"\n  }\n}"
+        },
+        {
+          "name": "404 Not Found — ID no existe",
+          "status": "Not Found",
+          "code": 404,
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "body": "{\n  \"success\": false,\n  \"error\": \"No encontrado\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "3 — POST | Crear nuevo proveedor",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Accept", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\":    \"Distribuidora XYZ\",\n  \"contacto\":  \"Juan Pérez\",\n  \"telefono\":  \"507-6100-0000\",\n  \"email\":     \"juan@distribxyz.pa\",\n  \"direccion\": \"Betania, Panamá\",\n  \"categoria\": \"Insumos\",\n  \"estado\":    \"activo\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/proveedores",
+          "host": ["{{base_url}}"],
+          "path": ["api", "proveedores"]
+        },
+        "description": "Crea un nuevo proveedor en la base de datos.\n\n**Campos requeridos:** nombre, contacto, telefono, email, categoria\n**Campos opcionales:** direccion, estado (default: activo)\n\n⚠️ El email debe ser único — si ya existe retorna 409."
+      },
+      "response": [
+        {
+          "name": "201 Created — Proveedor creado",
+          "status": "Created",
+          "code": 201,
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "body": "{\n  \"success\": true,\n  \"message\": \"Proveedor creado\",\n  \"data\": {\n    \"id\": 6,\n    \"nombre\": \"Distribuidora XYZ\",\n    \"contacto\": \"Juan Pérez\",\n    \"telefono\": \"507-6100-0000\",\n    \"email\": \"juan@distribxyz.pa\",\n    \"direccion\": \"Betania, Panamá\",\n    \"categoria\": \"Insumos\",\n    \"estado\": \"activo\",\n    \"fecha_registro\": \"2026-03-22 10:30:00\"\n  }\n}"
+        },
+        {
+          "name": "409 Conflict — Email duplicado",
+          "status": "Conflict",
+          "code": 409,
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "body": "{\n  \"success\": false,\n  \"error\": \"Email ya registrado\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "4 — PUT | Actualizar proveedor",
+      "request": {
+        "method": "PUT",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Accept", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nombre\":   \"Distribuidora XYZ Actualizada\",\n  \"telefono\": \"507-7000-9999\",\n  \"estado\":   \"inactivo\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": {
+          "raw": "{{base_url}}/api/proveedores/{{proveedor_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "proveedores", "{{proveedor_id}}"]
+        },
+        "description": "Actualiza un proveedor existente por ID.\n\nSolo envía los campos que deseas modificar — los demás se conservan tal como están en la base de datos."
+      },
+      "response": [
+        {
+          "name": "200 OK — Proveedor actualizado",
+          "status": "OK",
+          "code": 200,
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "body": "{\n  \"success\": true,\n  \"message\": \"Actualizado\",\n  \"data\": {\n    \"id\": 1,\n    \"nombre\": \"Distribuidora XYZ Actualizada\",\n    \"contacto\": \"Juan Pérez\",\n    \"telefono\": \"507-7000-9999\",\n    \"email\": \"juan@distribxyz.pa\",\n    \"direccion\": \"Betania, Panamá\",\n    \"categoria\": \"Insumos\",\n    \"estado\": \"inactivo\",\n    \"fecha_registro\": \"2026-03-22 10:30:00\"\n  }\n}"
+        },
+        {
+          "name": "404 Not Found — ID no existe",
+          "status": "Not Found",
+          "code": 404,
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "body": "{\n  \"success\": false,\n  \"error\": \"No encontrado\"\n}"
+        }
+      ]
+    },
+    {
+      "name": "5 — DELETE | Eliminar proveedor",
+      "request": {
+        "method": "DELETE",
+        "header": [
+          { "key": "Accept", "value": "application/json" }
+        ],
+        "url": {
+          "raw": "{{base_url}}/api/proveedores/{{proveedor_id}}",
+          "host": ["{{base_url}}"],
+          "path": ["api", "proveedores", "{{proveedor_id}}"]
+        },
+        "description": "Elimina permanentemente un proveedor por su ID.\n\n⚠️ Esta operación no se puede deshacer."
+      },
+      "response": [
+        {
+          "name": "200 OK — Proveedor eliminado",
+          "status": "OK",
+          "code": 200,
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "body": "{\n  \"success\": true,\n  \"message\": \"Proveedor 'Distribuidora XYZ' eliminado\"\n}"
+        },
+        {
+          "name": "404 Not Found — ID no existe",
+          "status": "Not Found",
+          "code": 404,
+          "header": [{ "key": "Content-Type", "value": "application/json" }],
+          "body": "{\n  \"success\": false,\n  \"error\": \"No encontrado\"\n}"
+        }
+      ]
+    }
+  ]
+}
