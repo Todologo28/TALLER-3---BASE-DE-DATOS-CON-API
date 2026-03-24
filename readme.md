@@ -1,13 +1,8 @@
-#  Sistema de Gestión de Proveedores — API REST
+Sistema de Gestión de Proveedores — API REST
+Descripción
+API REST completa con operaciones CRUD (Create, Read, Update, Delete) para la gestión de proveedores, desarrollada con Python Flask y SQLite. Incluye un frontend interactivo y documentación de pruebas con Postman.
 
-## Descripción
-API REST completa con operaciones **CRUD** (Create, Read, Update, Delete) para la gestión de proveedores, desarrollada con **Python Flask** y **SQLite**. Incluye un frontend interactivo y documentación de pruebas con Postman.
-
----
-
-# Estructura del Proyecto
-
-```
+Estructura del Proyecto
 proveedores-api/
 │
 ├── app.py              # API REST (Flask + SQLite)
@@ -15,73 +10,44 @@ proveedores-api/
 ├── index.html          # Frontend interactivo con CRUD completo
 ├── README.md           # Este archivo
 └── .gitignore
-```
-
----
-
-# Tecnologías
-
-| Tecnología | Uso |
-|---|---|
-| Python 3 | Lenguaje principal |
-| Flask | Framework web / API REST |
-| Flask-CORS | Manejo de CORS para el frontend |
-| SQLite | Base de datos embebida |
-| HTML/CSS/JS | Frontend interactivo |
-
----
-
-# Cómo ejecutar
-
-### 1. Instalar dependencias
-```bash
+Tecnologías
+Tecnología	Uso
+Python 3	Lenguaje principal
+Flask	Framework web / API REST
+Flask-CORS	Manejo de CORS para el frontend
+SQLite	Base de datos embebida
+HTML/CSS/JS	Frontend interactivo
+Cómo ejecutar
+1. Instalar dependencias
 pip install flask flask-cors
-```
-
-### 2. Ejecutar la API
-```bash
+2. Ejecutar la API
 python app.py
-```
-La API correrá en: `http://localhost:5000`
+La API correrá en: http://localhost:5000
 
-### 3. Abrir el Frontend
-Abre `index.html` en tu navegador.
+3. Abrir el Frontend
+Abre index.html en tu navegador.
 
----
-
-# Endpoints de la API
-
-| Método | Endpoint | Descripción |
-|---|---|---|
-| `GET` | `/api/proveedores` | Obtener todos los proveedores |
-| `GET` | `/api/proveedores/<id>` | Obtener un proveedor por ID |
-| `POST` | `/api/proveedores` | Crear nuevo proveedor |
-| `PUT` | `/api/proveedores/<id>` | Actualizar proveedor existente |
-| `DELETE` | `/api/proveedores/<id>` | Eliminar proveedor |
-
----
-
-# Parte II — Pruebas con Postman
-
-### Configuración inicial
-- **Base URL:** `http://localhost:5000`
-- **Headers:** `Content-Type: application/json`
-
-## 1️ GET — Consultar todos los proveedores
-```
+Endpoints de la API
+Método	Endpoint	Descripción
+GET	/api/proveedores	Obtener todos los proveedores
+GET	/api/proveedores/<id>	Obtener un proveedor por ID
+POST	/api/proveedores	Crear nuevo proveedor
+PUT	/api/proveedores/<id>	Actualizar proveedor existente
+DELETE	/api/proveedores/<id>	Eliminar proveedor
+Parte II — Pruebas con Postman
+Configuración inicial
+Base URL: http://localhost:5000
+Headers: Content-Type: application/json
+1️ GET — Consultar todos los proveedores
 GET http://localhost:5000/api/proveedores
-```
-**Respuesta:**
-```json
+Respuesta:
+
 {
   "success": true,
   "total": 5,
   "data": [...]
 }
-```
-
-## 2️ POST — Insertar nuevo proveedor
-```
+2️ POST — Insertar nuevo proveedor
 POST http://localhost:5000/api/proveedores
 Content-Type: application/json
 
@@ -94,10 +60,7 @@ Content-Type: application/json
   "categoria": "Insumos",
   "estado":    "activo"
 }
-```
-
-### 3️ PUT — Actualizar proveedor
-```
+3️ PUT — Actualizar proveedor
 PUT http://localhost:5000/api/proveedores/1
 Content-Type: application/json
 
@@ -105,39 +68,25 @@ Content-Type: application/json
   "telefono": "507-7000-9999",
   "estado":   "inactivo"
 }
-```
-
-### 4️ DELETE — Eliminar proveedor
-```
+4️ DELETE — Eliminar proveedor
 DELETE http://localhost:5000/api/proveedores/6
-```
+Parte III — Caso de Uso
+Sistema de Gestión de Proveedores Médicos — MedPanamá S.A.
+Actores: Departamento de Compras
+Objetivo: Gestionar proveedores médicos de forma eficiente
 
----
+Flujo del Caso de Uso:
+Consultar (SELECT): El encargado de compras consulta los proveedores activos de categoría "Médico" para evaluar opciones antes de una compra.
 
-##  Parte III — Caso de Uso
+Registrar (INSERT): Llega una oferta de un nuevo proveedor "Equipos Médicos del Istmo". El encargado lo registra en el sistema con todos sus datos de contacto.
 
-### Sistema de Gestión de Proveedores Médicos — MedPanamá S.A.
+Actualizar (UPDATE): El proveedor "MediSupplies" notifica un cambio de número telefónico. Se actualiza la información en el sistema.
 
-**Actores:** Departamento de Compras  
-**Objetivo:** Gestionar proveedores médicos de forma eficiente
+Consultar detalle (SELECT por ID): Antes de realizar un pedido, se consulta la información completa de un proveedor específico para verificar que está activo y tiene datos correctos.
 
-#### Flujo del Caso de Uso:
+Eliminar (DELETE): Un proveedor cierra operaciones. Se elimina del sistema para mantener la base de datos limpia.
 
-1. **Consultar (SELECT):** El encargado de compras consulta los proveedores activos de categoría "Médico" para evaluar opciones antes de una compra.
-
-2. **Registrar (INSERT):** Llega una oferta de un nuevo proveedor "Equipos Médicos del Istmo". El encargado lo registra en el sistema con todos sus datos de contacto.
-
-3. **Actualizar (UPDATE):** El proveedor "MediSupplies" notifica un cambio de número telefónico. Se actualiza la información en el sistema.
-
-4. **Consultar detalle (SELECT por ID):** Antes de realizar un pedido, se consulta la información completa de un proveedor específico para verificar que está activo y tiene datos correctos.
-
-5. **Eliminar (DELETE):** Un proveedor cierra operaciones. Se elimina del sistema para mantener la base de datos limpia.
-
----
-
-##  Esquema de la Base de Datos
-
-```sql
+Esquema de la Base de Datos
 CREATE TABLE proveedores (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
     nombre          TEXT    NOT NULL,
@@ -149,25 +98,14 @@ CREATE TABLE proveedores (
     estado          TEXT    DEFAULT 'activo',
     fecha_registro  TEXT    DEFAULT (datetime('now'))
 );
-```
-
----
-
-##  Datos de muestra incluidos
-
-| # | Nombre | Categoría | Estado |
-|---|---|---|---|
-| 1 | TechSupply S.A. | Tecnología | Activo |
-| 2 | Distribuidora Global | Insumos | Activo |
-| 3 | Papelería Nacional | Papelería | Activo |
-| 4 | LogiPanamá | Logística | Inactivo |
-| 5 | MediSupplies | Médico | Activo |
-
----
-
-##  Notas para el repositorio Git
-
-```bash
+Datos de muestra incluidos
+#	Nombre	Categoría	Estado
+1	TechSupply S.A.	Tecnología	Activo
+2	Distribuidora Global	Insumos	Activo
+3	Papelería Nacional	Papelería	Activo
+4	LogiPanamá	Logística	Inactivo
+5	MediSupplies	Médico	Activo
+Notas para el repositorio Git
 # Comandos para subir al repositorio
 git init
 git add .
@@ -175,13 +113,12 @@ git commit -m "feat: API REST CRUD de Proveedores con Flask y SQLite"
 git branch -M main
 git remote add origin https://github.com/usuario/proveedores-api.git
 git push -u origin main
-```
 
-## Para el CRUD completo, usa Postman:
+Para el CRUD completo, usa Postman:
 
-Acción      Método  URL  
-Ver todos  GET      127.0.0.1:5000/api/proveedores
-Ver uno    GET      127.0.0.1:5000/api/proveedores/1
-Insertar   POST     127.0.0.1:5000/api/proveedores
-Actualizar  PUT     127.0.0.1:5000/api/proveedores/1
-Eliminar    DELETE  127.0.0.1:5000/api/proveedores/1
+Acción           Método      URL
+Ver todos         GET       127.0.0.1:5000/api/proveedores 
+Ver uno           GET       127.0.0.1:5000/api/proveedores/1 
+Insertar          POST      127.0.0.1:5000/api/proveedores 
+Actualizar        PUT       127.0.0.1:5000/api/proveedores/1 
+Eliminar          DELETE    127.0.0.1:5000/api/proveedores/1
