@@ -2,9 +2,10 @@
 API REST - Sistema de Proveedores
 CRUD completo con SQLite
 """
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 import sqlite3
+import os
 
 app = Flask(__name__)
 CORS(app)
@@ -46,7 +47,7 @@ def get_db():
 
 @app.route("/", methods=["GET"])
 def index():
-    return jsonify({"api":"Sistema de Proveedores","version":"1.0.0"})
+    return send_from_directory(".", "index.html")
 
 @app.route("/api/proveedores", methods=["GET"])
 def get_all():
