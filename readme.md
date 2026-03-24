@@ -176,3 +176,12 @@ git branch -M main
 git remote add origin https://github.com/usuario/proveedores-api.git
 git push -u origin main
 ```
+
+## Para el CRUD completo, usa Postman:
+
+Acción      Método  URL  
+Ver todos  GET      127.0.0.1:5000/api/proveedores
+Ver uno    GET      127.0.0.1:5000/api/proveedores/1
+Insertar   POST     127.0.0.1:5000/api/proveedores
+Actualizar  PUT     127.0.0.1:5000/api/proveedores/1
+Eliminar    DELETE  127.0.0.1:5000/api/proveedores/1
