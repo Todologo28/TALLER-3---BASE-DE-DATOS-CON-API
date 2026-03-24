@@ -29,7 +29,7 @@ Abre index.html en tu navegador.
 
 Endpoints de la API
 Método	Endpoint	Descripción
-GET	/api/proveedores	Obtener todos los proveedores
+GET	/api/proveedores	Obtener todos los proveedores.
 GET	/api/proveedores/<id>	Obtener un proveedor por ID
 POST	/api/proveedores	Crear nuevo proveedor
 PUT	/api/proveedores/<id>	Actualizar proveedor existente
